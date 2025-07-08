@@ -1,7 +1,25 @@
 #!/usr/bin/env node
-// afplay ~/dev/zshrc/OOT_Carrot.wav
+
+/**
+ * SETUP INSTRUCTIONS:
+ *
+ * 1. Install terminal-notifier:
+ *    brew install terminal-notifier
+ *
+ * 2. Grant notification permissions:
+ *    - Go to System Settings > Privacy & Security > Notifications
+ *    - Find "terminal-notifier" in the list
+ *    - Enable "Allow Notifications"
+ *    - You may also want to adjust the notification style and other settings
+ *
+ * 3. Test the notification:
+ *    terminal-notifier -title "Test" -message "Hello" -execute "echo 'Clicked!'"
+ *
+ * Note: The first time terminal-notifier runs, macOS may prompt you to allow notifications.
+ */
 
 const { exec } = require("child_process");
+const path = require("path");
 
 // Read input from stdin
 let inputData = "";
@@ -37,17 +55,27 @@ process.stdin.on("end", () => {
 
     // Only speak if we have a message
     if (message) {
-      // Use macOS 'notify' command to speak the message
-      exec(
-        `osascript -e 'display notification "Test with sound" with title "Test"'`,
-        (error) => {
-          if (error) {
-            console.error(`Error notifying: ${error.message}`);
-            process.exit(1);
-          }
-          process.exit(0);
+      // Get the working directory from the environment or data
+      const pwd = process.env.PWD || process.cwd();
+
+      // Get just the project name (last part of the path)
+      const projectName = path.basename(pwd);
+
+      // Escape double quotes in message for shell command
+      const escapedMessage = message.replace(/"/g, '\\"');
+
+      // Use terminal-notifier to display notification
+      // -execute opens cursor with the project directory when clicked
+      // Note: -execute requires escaping quotes properly
+      const command = `terminal-notifier -title "${projectName}" -message "${escapedMessage}" -execute '/usr/local/bin/cursor ${pwd}'`;
+
+      exec(command, (error) => {
+        if (error) {
+          console.error(`Error notifying: ${error.message}`);
+          process.exit(1);
         }
-      );
+        process.exit(0);
+      });
     } else {
       process.exit(0);
     }
