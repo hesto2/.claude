@@ -44,13 +44,16 @@ process.stdin.on("end", () => {
   try {
     const data = JSON.parse(inputData);
 
-    // For Notification events, speak the notification message
+    // Handle different event types
     let message = "";
 
-    // The notification event uses hook_event_name, not event
+    // Check for both Notification and Stop events
     if (data.hook_event_name === "Notification" && data.message) {
       // Extract the notification text
       message = data.message;
+    } else if (data.hook_event_name === "Stop" || data.event === "Stop") {
+      // For Stop events, create a completion message
+      message = "Task completed successfully";
     } else if (data.message) {
       // Fallback to just use message if present
       message = data.message;
