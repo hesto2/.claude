@@ -46,17 +46,21 @@ process.stdin.on("end", () => {
 
     // Handle different event types
     let message = "";
+    let eventType = null;
 
     // Check for both Notification and Stop events
     if (data.hook_event_name === "Notification" && data.message) {
       // Extract the notification text
       message = data.message;
+      eventType = "notification";
     } else if (data.hook_event_name === "Stop" || data.event === "Stop") {
       // For Stop events, create a completion message
       message = "Task completed successfully";
+      eventType = "stop";
     } else if (data.message) {
       // Fallback to just use message if present
       message = data.message;
+      eventType = "notification";
     }
 
     // Clean up the message for speech (remove markdown, etc)
@@ -83,8 +87,9 @@ process.stdin.on("end", () => {
       exec(checkActiveWindowCommand, (error, stdout) => {
         const activeWindowName = stdout ? stdout.trim() : '';
 
-        // If the project name is in the active window title, skip notification
-        if (activeWindowName.toLowerCase().includes(projectName.toLowerCase())) {
+        // If the project name is in the active window title, skip notification unless forced
+        if (activeWindowName.toLowerCase().includes(projectName.toLowerCase()) && 
+            !customConfig.forceNotifyIfFocused) {
           process.exit(0);
           return;
         }
@@ -99,7 +104,16 @@ process.stdin.on("end", () => {
 
         // Add sound if notificationSoundEnabled is true in customConfig
         if (customConfig.notificationSoundEnabled === true) {
-          command += ' -sound Ping';
+          // Use specific sound based on event type
+          let soundName = 'default';
+          
+          if (eventType === 'stop' && customConfig.stopSound) {
+            soundName = customConfig.stopSound;
+          } else if (eventType === 'notification' && customConfig.notificationSound) {
+            soundName = customConfig.notificationSound;
+          }
+          
+          command += ` -sound ${soundName}`;
         }
 
         exec(command, (error) => {
