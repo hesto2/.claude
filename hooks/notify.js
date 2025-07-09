@@ -20,6 +20,19 @@
 
 const { exec } = require("child_process");
 const path = require("path");
+const fs = require("fs");
+const os = require("os");
+
+// Read custom config
+let customConfig = {};
+try {
+  const configPath = path.join(os.homedir(), ".claude", "customConfig.json");
+  if (fs.existsSync(configPath)) {
+    customConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
+  }
+} catch (e) {
+  // Ignore errors, use default empty config
+}
 
 // Read input from stdin
 let inputData = "";
@@ -61,20 +74,38 @@ process.stdin.on("end", () => {
       // Get just the project name (last part of the path)
       const projectName = path.basename(pwd);
 
-      // Escape double quotes in message for shell command
-      const escapedMessage = message.replace(/"/g, '\\"');
+      // Check if the active window contains the project name
+      const checkActiveWindowCommand = `osascript -e 'tell application "System Events" to get name of front window of (first application process whose frontmost is true)'`;
 
-      // Use terminal-notifier to display notification
-      // -execute opens cursor with the project directory when clicked
-      // Note: -execute requires escaping quotes properly
-      const command = `terminal-notifier -title "${projectName}" -message "${escapedMessage}" -execute '/usr/local/bin/cursor ${pwd}'`;
+      exec(checkActiveWindowCommand, (error, stdout) => {
+        const activeWindowName = stdout ? stdout.trim() : '';
 
-      exec(command, (error) => {
-        if (error) {
-          console.error(`Error notifying: ${error.message}`);
-          process.exit(1);
+        // If the project name is in the active window title, skip notification
+        if (activeWindowName.toLowerCase().includes(projectName.toLowerCase())) {
+          process.exit(0);
+          return;
         }
-        process.exit(0);
+
+        // Escape double quotes in message for shell command
+        const escapedMessage = message.replace(/"/g, '\\"');
+
+        // Use terminal-notifier to display notification
+        // -execute opens cursor with the project directory when clicked
+        // Note: -execute requires escaping quotes properly
+        let command = `terminal-notifier -title "${projectName}" -message "${escapedMessage}" -execute '/usr/local/bin/cursor ${pwd}'`;
+
+        // Add sound if notificationSoundEnabled is true in customConfig
+        if (customConfig.notificationSoundEnabled === true) {
+          command += ' -sound Ping';
+        }
+
+        exec(command, (error) => {
+          if (error) {
+            console.error(`Error notifying: ${error.message}`);
+            process.exit(1);
+          }
+          process.exit(0);
+        });
       });
     } else {
       process.exit(0);
