@@ -4,113 +4,105 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This is a Claude Code configuration repository that extends Claude's functionality through custom hooks and commands. It serves as a personal dotfiles repository for Claude Code customizations.
+This is a Claude Code configuration repository that extends Claude's functionality through custom hooks and commands. It serves as a personal dotfiles repository for Claude Code customizations on macOS.
 
-## Architecture
-
-The repository follows a modular architecture with clear separation between different types of extensions:
-
-- **Hooks** (`hooks/`): Event-driven scripts that execute at specific points in Claude's lifecycle
-- **Commands** (`commands/`): Custom slash commands that extend Claude's interactive capabilities
-- **Configuration**: JSON-based settings that control behavior
-
-### Key Components
-
-#### Notification System (`hooks/notify.js`)
-A sophisticated notification system that:
-- Detects whether the user is actively working in the project window
-- Sends desktop notifications via macOS `terminal-notifier`
-- Plays different sounds based on event type (notifications vs completion)
-- Reads configuration from `customConfig.json` for sound preferences
-- Handles both `Notification` and `Stop` events
-
-Key configuration options in `customConfig.json`:
-- `notificationSoundEnabled`: Enable/disable sounds
-- `notificationSound`: Sound for regular notifications
-- `stopSound`: Sound for task completion
-- `forceNotifyIfFocused`: Show notifications even when window is focused
-
-#### Logging System (`hooks/log-tool-use.js`)
-Comprehensive logging that:
-- Records all tool usage to `~/.claude/logs/[project-name]/tool-use.log`
-- Captures timestamp, tool name, inputs, and outputs
-- Creates project-specific log directories automatically
-
-#### Sound Control Commands
-- `commands/soundOn.md`: Enables notification sounds
-- `commands/soundOff.md`: Disables notification sounds
-
-Both commands use inline Node.js to update `customConfig.json` while preserving other settings.
-
-## Configuration Files
-
-### `settings.json`
-Main configuration defining:
-- Permissions (e.g., WebFetch for docs.anthropic.com)
-- Hook mappings for events (PostToolUse, Notification, Stop)
-
-### `customConfig.json`
-User preferences for notifications and sounds. This file is read by hooks at runtime.
-
-## Development Commands
+## Commands
 
 ### Testing Hooks
 ```bash
 # Test notification hook
 echo '{"hook_event_name": "Notification", "message": "Test message"}' | node ~/.claude/hooks/notify.js
 
-# Test stop hook
+# Test stop hook (completion sound)
 echo '{"hook_event_name": "Stop"}' | node ~/.claude/hooks/notify.js
+
+# Test with custom configuration
+echo '{"hook_event_name": "Notification", "message": "Test", "forceNotifyIfFocused": true}' | node ~/.claude/hooks/notify.js
 ```
 
-### Modifying Configuration
+### Managing Sound Settings
 ```bash
-# Enable sounds
+# Enable notification sounds
 node -e "const fs=require('fs'); const path=require('path'); const configPath=path.join(process.env.HOME, '.claude', 'customConfig.json'); let config={}; try { if(fs.existsSync(configPath)) { config=JSON.parse(fs.readFileSync(configPath, 'utf8')); } } catch(e) {} config.notificationSoundEnabled=true; fs.writeFileSync(configPath, JSON.stringify(config, null, 2));"
+
+# Disable notification sounds
+node -e "const fs=require('fs'); const path=require('path'); const configPath=path.join(process.env.HOME, '.claude', 'customConfig.json'); let config={}; try { if(fs.existsSync(configPath)) { config=JSON.parse(fs.readFileSync(configPath, 'utf8')); } } catch(e) {} config.notificationSoundEnabled=false; fs.writeFileSync(configPath, JSON.stringify(config, null, 2));"
 
 # Check current configuration
 cat ~/.claude/customConfig.json
 ```
 
-## Hook Event Data Structure
+### Git Worktree Management
+```bash
+# Add a new worktree
+./helper-scripts/addWorkTree.sh <branch-name>
 
-Hooks receive JSON via stdin with this structure:
+# Remove a worktree
+./helper-scripts/removeWorkTree.sh <worktree-path>
+```
+
+## Architecture
+
+### Core Components
+
+1. **Notification System** (`hooks/notify.js`)
+   - Detects window focus state to avoid redundant notifications
+   - Sends macOS desktop notifications via `terminal-notifier`
+   - Plays configurable sounds for different events
+   - Reads settings from `customConfig.json`
+
+2. **Logging System** (`hooks/log-tool-use.js`)
+   - Logs all tool usage to `~/.claude/logs/[project-name]/tool-use.log`
+   - Creates project-specific directories automatically
+   - Captures timestamp, tool name, inputs, and outputs
+
+3. **Sound Control Commands** (`commands/soundOn.md`, `commands/soundOff.md`)
+   - Toggle notification sounds via slash commands
+   - Modifies `customConfig.json` while preserving other settings
+
+### Configuration Files
+
+- **`settings.json`**: Defines hook mappings and permissions
+- **`customConfig.json`**: User preferences for notifications and sounds
+  - `notificationSoundEnabled`: Toggle for sound effects
+  - `notificationSound`: Sound name for regular notifications
+  - `stopSound`: Sound name for task completion
+  - `forceNotifyIfFocused`: Show notifications even when focused
+
+### Hook Event Structure
+
+Hooks receive JSON via stdin:
 ```json
 {
-  "hook_event_name": "Notification|Stop",
-  "event": "Notification|Stop",
-  "message": "notification text",
-  "tool_name": "tool name",
-  "tool_input": { /* tool-specific parameters */ },
-  "tool_output": { /* available in PostToolUse */ }
+  "hook_event_name": "Notification|Stop|PostToolUse",
+  "message": "notification text (for Notification events)",
+  "tool_name": "tool name (for PostToolUse)",
+  "tool_input": {},
+  "tool_output": {}
 }
 ```
 
-## Platform Requirements
+## Development Guidelines
 
-- **macOS**: Required for notification system (uses `terminal-notifier` and AppleScript)
-- **Node.js**: All hooks are written in Node.js
-- **terminal-notifier**: Must be installed via `brew install terminal-notifier`
+### Adding New Hooks
+1. Create JavaScript file in `hooks/`
+2. Register in `settings.json` under appropriate event
+3. Test with echo command and JSON payload
+4. Handle missing configuration gracefully
 
-## Important Directories
+### Adding New Commands
+1. Create markdown file in `commands/`
+2. Include inline Node.js for configuration changes
+3. Follow existing pattern of reading/writing `customConfig.json`
 
-- `logs/`: Tool usage logs (gitignored)
-- `projects/`: Project-specific data (gitignored)
-- `todos/`: Task tracking data (gitignored)
-- `statsig/`: Analytics data (gitignored)
+### Platform Requirements
+- **macOS**: Required for notification system
+- **Node.js**: All hooks written in Node.js
+- **terminal-notifier**: Install via `brew install terminal-notifier`
 
-## Adding New Features
+## Important Notes
 
-When extending this configuration:
-
-1. **New Hooks**: Place JavaScript files in `hooks/` and register them in `settings.json`
-2. **New Commands**: Create markdown files in `commands/` following the existing pattern
-3. **Configuration**: Add new settings to `customConfig.json` and ensure hooks handle missing values gracefully
-4. **Logging**: The existing log infrastructure in `log-tool-use.js` can be extended for new event types
-
-## Security Considerations
-
-- Hooks run with full user permissions
-- Always validate and sanitize inputs from stdin
-- Use absolute paths to prevent path traversal
-- Quote shell variables properly in commands
+- Hooks run with full user permissions - validate all inputs
+- The repository uses absolute paths to prevent security issues
+- Logs, projects, todos, and statsig directories are gitignored
+- Window focus detection uses AppleScript for intelligent notifications
