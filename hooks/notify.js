@@ -98,9 +98,8 @@ process.stdin.on("end", () => {
         const escapedMessage = message.replace(/"/g, '\\"');
 
         // Use terminal-notifier to display notification
-        // -execute opens cursor with the project directory when clicked
-        // Note: -execute requires escaping quotes properly
-        let command = `terminal-notifier -title "${projectName}" -message "${escapedMessage}" -execute '/usr/local/bin/cursor ${pwd}'`;
+        // Using -open with cursor:// URL to open/focus Cursor
+        let command = `terminal-notifier -title "${projectName}" -message "${escapedMessage}" -open "cursor://file/${pwd}"`;
 
         // Add sound if notificationSoundEnabled is true in customConfig
         if (customConfig.notificationSoundEnabled === true) {
