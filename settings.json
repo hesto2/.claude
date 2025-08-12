@@ -1,7 +1,33 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
-      "WebFetch(domain:docs.anthropic.com)"
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(open:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(touch:*)",
+      "Bash(yarn:*)",
+      "Bash(terraform validate:*)",
+      "Bash(terraform output:*)",
+      "Bash(chmod:*)",
+      "Bash(git add:*)",
+      "mcp__atlassian__jira_get_transitions",
+      "mcp__atlassian__jira_transition_issue",
+      "mcp__atlassian__jira_get_issue",
+      "mcp__playwright__*",
+      "mcp__github__search_repositories",
+      "mcp__github__search_code",
+      "mcp__github__list_commits",
+      "mcp__github__get_file_contents",
+      "mcp__github__list_issues",
+      "mcp__github__list_pull_requests"
     ],
     "deny": []
   },
@@ -39,5 +65,8 @@
         ]
       }
     ]
+  },
+  "feedbackSurveyState": {
+    "lastShownTime": 1754083591700
   }
 }

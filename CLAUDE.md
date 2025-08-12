@@ -1,108 +1,46 @@
-# CLAUDE.md
+As you implement solutions, keep your implementations as simple as you can make them. Write code that a staff engineer would be impressed with due to its ease of understanding and maintainability.
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Before thinking of an implementaiton, think hard about where you can look to see existing patterns that do something similar and do your best to reuse existing functionality, or extend it.
 
-## Repository Overview
+Don't leave comments that are obviously stating what a line of code or a function does. Only use comments for pieces you feel are complicated enough to warrant it.
 
-This is a Claude Code configuration repository that extends Claude's functionality through custom hooks and commands. It serves as a personal dotfiles repository for Claude Code customizations on macOS.
+## Ai4 Conference Agenda Filtering
 
-## Commands
+When filtering the Ai4 conference agenda at https://ai4.io/vegas/agenda/#fullagenda:
 
-### Testing Hooks
-```bash
-# Test notification hook
-echo '{"hook_event_name": "Notification", "message": "Test message"}' | node ~/.claude/hooks/notify.js
+1. The agenda page contains an embedded iframe with filters on the left side
+2. To filter by track (e.g., "AI Agents [Technical]"):
+   - Use Playwright to navigate to the page
+   - The filter checkboxes are inside an iframe, so use: `await page.locator('#fullagenda iframe').contentFrame().getByLabel('AI Agents [Technical]').click();`
+   - Or click directly on the checkbox element using its ref ID (e.g., f1e1084 for AI Agents [Technical])
+3. The page responses can be very large (>25000 tokens), so screenshots are often more practical than full snapshots
+4. Filter categories include: Location, All Tracks, Technical Tracks, Industry Tracks, Job Function Tracks, Society Tracks, and Mini-Summits
 
-# Test stop hook (completion sound)
-echo '{"hook_event_name": "Stop"}' | node ~/.claude/hooks/notify.js
+### Strategy for Extracting Complete Agenda Data
 
-# Test with custom configuration
-echo '{"hook_event_name": "Notification", "message": "Test", "forceNotifyIfFocused": true}' | node ~/.claude/hooks/notify.js
-```
+When user requests a comprehensive list of ALL conference sessions:
 
-### Managing Sound Settings
-```bash
-# Enable notification sounds
-node -e "const fs=require('fs'); const path=require('path'); const configPath=path.join(process.env.HOME, '.claude', 'customConfig.json'); let config={}; try { if(fs.existsSync(configPath)) { config=JSON.parse(fs.readFileSync(configPath, 'utf8')); } } catch(e) {} config.notificationSoundEnabled=true; fs.writeFileSync(configPath, JSON.stringify(config, null, 2));"
-
-# Disable notification sounds
-node -e "const fs=require('fs'); const path=require('path'); const configPath=path.join(process.env.HOME, '.claude', 'customConfig.json'); let config={}; try { if(fs.existsSync(configPath)) { config=JSON.parse(fs.readFileSync(configPath, 'utf8')); } } catch(e) {} config.notificationSoundEnabled=false; fs.writeFileSync(configPath, JSON.stringify(config, null, 2));"
-
-# Check current configuration
-cat ~/.claude/customConfig.json
-```
-
-### Git Worktree Management
-```bash
-# Add a new worktree
-./helper-scripts/addWorkTree.sh <branch-name>
-
-# Remove a worktree
-./helper-scripts/removeWorkTree.sh <worktree-path>
-```
-
-## Architecture
-
-### Core Components
-
-1. **Notification System** (`hooks/notify.js`)
-   - Detects window focus state to avoid redundant notifications
-   - Sends macOS desktop notifications via `terminal-notifier`
-   - Plays configurable sounds for different events
-   - Reads settings from `customConfig.json`
-
-2. **Logging System** (`hooks/log-tool-use.js`)
-   - Logs all tool usage to `~/.claude/logs/[project-name]/tool-use.log`
-   - Creates project-specific directories automatically
-   - Captures timestamp, tool name, inputs, and outputs
-
-3. **Sound Control Commands** (`commands/soundOn.md`, `commands/soundOff.md`)
-   - Toggle notification sounds via slash commands
-   - Modifies `customConfig.json` while preserving other settings
-
-### Configuration Files
-
-- **`settings.json`**: Defines hook mappings and permissions
-- **`customConfig.json`**: User preferences for notifications and sounds
-  - `notificationSoundEnabled`: Toggle for sound effects
-  - `notificationSound`: Sound name for regular notifications
-  - `stopSound`: Sound name for task completion
-  - `forceNotifyIfFocused`: Show notifications even when focused
-
-### Hook Event Structure
-
-Hooks receive JSON via stdin:
-```json
-{
-  "hook_event_name": "Notification|Stop|PostToolUse",
-  "message": "notification text (for Notification events)",
-  "tool_name": "tool name (for PostToolUse)",
-  "tool_input": {},
-  "tool_output": {}
-}
-```
-
-## Development Guidelines
-
-### Adding New Hooks
-1. Create JavaScript file in `hooks/`
-2. Register in `settings.json` under appropriate event
-3. Test with echo command and JSON payload
-4. Handle missing configuration gracefully
-
-### Adding New Commands
-1. Create markdown file in `commands/`
-2. Include inline Node.js for configuration changes
-3. Follow existing pattern of reading/writing `customConfig.json`
-
-### Platform Requirements
-- **macOS**: Required for notification system
-- **Node.js**: All hooks written in Node.js
-- **terminal-notifier**: Install via `brew install terminal-notifier`
-
-## Important Notes
-
-- Hooks run with full user permissions - validate all inputs
-- The repository uses absolute paths to prevent security issues
-- Logs, projects, todos, and statsig directories are gitignored
-- Window focus detection uses AppleScript for intelligent notifications
+1. **Challenge:** Page responses exceed token limits (>25000 tokens) when trying to extract all data at once
+2. **Solution Strategy:**
+   - Filter by individual tracks one at a time to reduce response size
+   - Take screenshots of filtered results for visual reference
+   - Extract visible session data from the page snapshot when available
+   - Manually compile data from multiple filtered views into comprehensive markdown
+3. **Key Technical Tracks to Check:**
+   - AI Agents [Technical], AI Agents: Strategy, AI Agents: Applications
+   - RAG [Technical], RAG & Leveraging Proprietary Data
+   - ML Ops & Platforms [Technical], Software Engineering [Technical]
+   - Generative Models, Reinforcement Learning, Computer Vision
+4. **Data to Extract per Session:**
+   - Time slot (start and end time)
+   - Session title
+   - Speaker(s) and company
+   - Room location and level
+   - Session type (Workshop, Solo Talk, Roundtable, Keynote)
+   - Track assignment
+   - Description (if available)
+5. **Workaround for Token Limits:**
+   - Use `browser_take_screenshot` with fullPage=true for documentation
+   - Filter tracks individually rather than viewing all at once
+   - Extract data from page snapshots when they're under token limit
+   - Create comprehensive markdown file compiling all sessions by day

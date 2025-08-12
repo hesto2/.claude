@@ -8,6 +8,12 @@ worktree_path="$HOME/dev/worktrees/$(basename $PWD)-$task_name"
 # Create worktree
 git worktree add "$worktree_path" -b "$task_name"
 
+# Copy .claude directory if it exists
+if [ -d ".claude" ]; then
+    cp -r .claude "$worktree_path/"
+    echo "📂 Copied .claude directory to worktree"
+fi
+
 # Create workspace with auto-running task
 cat > "$worktree_path/${task_name}.code-workspace" << EOF
 {
@@ -22,7 +28,7 @@ cat > "$worktree_path/${task_name}.code-workspace" << EOF
                 "label": "Claude Code Auto Start",
                 "type": "shell",
                 "command": "claude",
-                "args": ["$prompt"],
+                "args": [],
                 "runOptions": {"runOn": "folderOpen"},
                 "presentation": {
                     "echo": true,
@@ -37,5 +43,6 @@ EOF
 
 # Open workspace
 cursor "$worktree_path/${task_name}.code-workspace"
+cd "$worktree_path" && npm install
 
 echo "✅ Opened Cursor with Claude Code auto-starting for task: $task_name"
