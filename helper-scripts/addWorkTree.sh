@@ -14,6 +14,12 @@ if [ -d ".claude" ]; then
     echo "📂 Copied .claude directory to worktree"
 fi
 
+# Copy .env file if it exists
+if [ -f ".env" ]; then
+    cp .env "$worktree_path/"
+    echo "📂 Copied .env file to worktree"
+fi
+
 # Create workspace with auto-running task
 cat > "$worktree_path/${task_name}.code-workspace" << EOF
 {

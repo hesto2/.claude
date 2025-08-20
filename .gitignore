@@ -6,3 +6,8 @@ todos
 .claude
 shell-snapshots
 .credentials.json
+# claude-tamagotchi pet files
+pet-*.md
+plugins
+pets
+settings.json.backup

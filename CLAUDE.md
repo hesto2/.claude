@@ -2,19 +2,11 @@ As you implement solutions, keep your implementations as simple as you can make 
 
 Before thinking of an implementaiton, think hard about where you can look to see existing patterns that do something similar and do your best to reuse existing functionality, or extend it.
 
-Don't leave comments that are obviously stating what a line of code or a function does. Only use comments for pieces you feel are complicated enough to warrant it.
+Don't leave comments in code unless explicitly asked to, instead make your code clear enough that it shouldn't need comments. Keep functions simple in purpose so they can clearly self document.
 
-## Ai4 Conference Agenda Filtering
+When writing out plans or markdown files or temp folders for cloning projects for temporary context, write them to the ai-artifacts folder in the given project. This folder is globally gitignored and won't be at risk of being commited with source code.
 
-When filtering the Ai4 conference agenda at https://ai4.io/vegas/agenda/#fullagenda:
-
-1. The agenda page contains an embedded iframe with filters on the left side
-2. To filter by track (e.g., "AI Agents [Technical]"):
-   - Use Playwright to navigate to the page
-   - The filter checkboxes are inside an iframe, so use: `await page.locator('#fullagenda iframe').contentFrame().getByLabel('AI Agents [Technical]').click();`
-   - Or click directly on the checkbox element using its ref ID (e.g., f1e1084 for AI Agents [Technical])
-3. The page responses can be very large (>25000 tokens), so screenshots are often more practical than full snapshots
-4. Filter categories include: Location, All Tracks, Technical Tracks, Industry Tracks, Job Function Tracks, Society Tracks, and Mini-Summits
+Don't use the timeout command, instead opt for sleep
 
 ### Strategy for Extracting Complete Agenda Data
 
