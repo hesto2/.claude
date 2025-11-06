@@ -34,10 +34,6 @@
     ],
     "deny": []
   },
-  "statusLine": {
-    "type": "command",
-    "command": "cd '/Users/hesto2/dev/claude-code-tamagotchi' && bun run --silent src/index.ts"
-  },
   "hooks": {
     "PostToolUse": [
       {
@@ -73,6 +69,11 @@
       }
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "cd '/Users/hesto2/dev/claude-code-tamagotchi' && bun run --silent src/index.ts"
+  },
+  "alwaysThinkingEnabled": false,
   "feedbackSurveyState": {
     "lastShownTime": 1754083591700
   }

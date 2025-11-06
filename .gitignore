@@ -11,3 +11,6 @@ pet-*.md
 plugins
 pets
 settings.json.backup
+history.jsonl
+debug/
+file-history/

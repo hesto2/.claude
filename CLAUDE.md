@@ -8,31 +8,4 @@ When writing out plans or markdown files or temp folders for cloning projects fo
 
 Don't use the timeout command, instead opt for sleep
 
-### Strategy for Extracting Complete Agenda Data
-
-When user requests a comprehensive list of ALL conference sessions:
-
-1. **Challenge:** Page responses exceed token limits (>25000 tokens) when trying to extract all data at once
-2. **Solution Strategy:**
-   - Filter by individual tracks one at a time to reduce response size
-   - Take screenshots of filtered results for visual reference
-   - Extract visible session data from the page snapshot when available
-   - Manually compile data from multiple filtered views into comprehensive markdown
-3. **Key Technical Tracks to Check:**
-   - AI Agents [Technical], AI Agents: Strategy, AI Agents: Applications
-   - RAG [Technical], RAG & Leveraging Proprietary Data
-   - ML Ops & Platforms [Technical], Software Engineering [Technical]
-   - Generative Models, Reinforcement Learning, Computer Vision
-4. **Data to Extract per Session:**
-   - Time slot (start and end time)
-   - Session title
-   - Speaker(s) and company
-   - Room location and level
-   - Session type (Workshop, Solo Talk, Roundtable, Keynote)
-   - Track assignment
-   - Description (if available)
-5. **Workaround for Token Limits:**
-   - Use `browser_take_screenshot` with fullPage=true for documentation
-   - Filter tracks individually rather than viewing all at once
-   - Extract data from page snapshots when they're under token limit
-   - Create comprehensive markdown file compiling all sessions by day
+When doing operations on github to read comments, evaluate pr content, etc. use the Github CLI instead of trying to hit a link directly. These are often authenticated and will return 404s.

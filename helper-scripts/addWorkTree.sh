@@ -14,11 +14,13 @@ if [ -d ".claude" ]; then
     echo "📂 Copied .claude directory to worktree"
 fi
 
-# Copy .env file if it exists
-if [ -f ".env" ]; then
-    cp .env "$worktree_path/"
-    echo "📂 Copied .env file to worktree"
-fi
+# Copy all .env* files if they exist
+for env_file in .env*; do
+    if [ -f "$env_file" ]; then
+        cp "$env_file" "$worktree_path/"
+        echo "📂 Copied $env_file to worktree"
+    fi
+done
 
 # Create workspace with auto-running task
 cat > "$worktree_path/${task_name}.code-workspace" << EOF
@@ -30,18 +32,6 @@ cat > "$worktree_path/${task_name}.code-workspace" << EOF
     "tasks": {
         "version": "2.0.0",
         "tasks": [
-            {
-                "label": "Claude Code Auto Start",
-                "type": "shell",
-                "command": "claude",
-                "args": [],
-                "runOptions": {"runOn": "folderOpen"},
-                "presentation": {
-                    "echo": true,
-                    "reveal": "always",
-                    "panel": "new"
-                }
-            }
         ]
     }
 }
@@ -49,6 +39,6 @@ EOF
 
 # Open workspace
 cursor "$worktree_path/${task_name}.code-workspace"
-cd "$worktree_path" && npm install
+cd "$worktree_path"
 
 echo "✅ Opened Cursor with Claude Code auto-starting for task: $task_name"
