@@ -30,7 +30,8 @@
       "mcp__github__list_pull_requests",
       "mcp__playwright__browser_navigate",
       "mcp__playwright__browser_network_requests",
-      "mcp__playwright__browser_close"
+      "mcp__playwright__browser_close",
+      "Bash(sh:*)"
     ],
     "deny": []
   },
@@ -73,7 +74,7 @@
     "type": "command",
     "command": "cd '/Users/hesto2/dev/claude-code-tamagotchi' && bun run --silent src/index.ts"
   },
-  "alwaysThinkingEnabled": false,
+  "alwaysThinkingEnabled": true,
   "feedbackSurveyState": {
     "lastShownTime": 1754083591700
   }

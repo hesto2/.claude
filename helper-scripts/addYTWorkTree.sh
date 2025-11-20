@@ -1,8 +1,13 @@
 #!/bin/bash
 
 task_name="$1"
-shift  # Remove first argument
-prompt="${*:-Working on: $task_name}"  # Capture all remaining arguments
+
+if [ -z "$task_name" ]; then
+  echo "Error: Branch name is required"
+  echo "Usage: addYTWorkTree.sh <branch-name>"
+  exit 1
+fi
+
 worktree_path="$HOME/dev/worktrees/$(basename $PWD)-$task_name"
 
 # Create worktree
@@ -22,7 +27,7 @@ for env_file in .env*; do
     fi
 done
 
-# Create workspace with auto-running task
+# Create workspace with auto-running Claude Code task
 cat > "$worktree_path/${task_name}.code-workspace" << EOF
 {
     "folders": [{"path": "."}],
@@ -32,6 +37,18 @@ cat > "$worktree_path/${task_name}.code-workspace" << EOF
     "tasks": {
         "version": "2.0.0",
         "tasks": [
+            {
+                "label": "Start Claude Code",
+                "type": "shell",
+                "command": "claude --dangerously-skip-permissions /youtube-pipeline ${task_name}",
+                "runOptions": {
+                    "runOn": "folderOpen"
+                },
+                "presentation": {
+                    "reveal": "always",
+                    "panel": "new"
+                }
+            }
         ]
     }
 }
@@ -39,6 +56,6 @@ EOF
 
 # Open workspace
 cursor "$worktree_path/${task_name}.code-workspace"
-cd "$worktree_path"
 
-echo "✅ Opened Cursor with Claude Code auto-starting for task: $task_name"
+echo "✅ Created worktree with Claude Code task for youtube-pipeline: $task_name"
+echo "   The workspace will automatically run: claude --dangerously-skip-permissions /youtube-pipeline ${task_name}"

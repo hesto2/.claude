@@ -9,3 +9,12 @@ When writing out plans or markdown files or temp folders for cloning projects fo
 Don't use the timeout command, instead opt for sleep
 
 When doing operations on github to read comments, evaluate pr content, etc. use the Github CLI instead of trying to hit a link directly. These are often authenticated and will return 404s.
+
+## Notifications
+
+When asked to notify me or let me know when something completes, use the bell script:
+```bash
+sh ~/dev/@hesto2/zshrc/scripts/bell.sh "Your notification message here"
+```
+
+This sends a Slack notification with the provided message. Use it for long-running tasks, completion notifications, or when explicitly asked to notify.

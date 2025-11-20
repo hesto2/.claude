@@ -20,7 +20,8 @@
       "Bash(./download-website.sh)",
       "Bash(rm:*)",
       "Bash(zip:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(sh:*)"
     ],
     "deny": []
   }
